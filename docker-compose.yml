@@ -28,7 +28,8 @@ services:
           cp /opt/unbound/template/root.hints /opt/unbound/etc/unbound/state/root.hints || true;
         fi
       fi;
-      [ -f /opt/unbound/etc/unbound/state/unbound_control.key ] || unbound-control-setup -d /opt/unbound/etc/unbound/state;
+      rm -f /opt/unbound/etc/unbound/state/unbound_control.key /opt/unbound/etc/unbound/state/unbound_control.pem /opt/unbound/etc/unbound/state/unbound_server.key /opt/unbound/etc/unbound/state/unbound_server.pem 2>/dev/null || true;
+      unbound-control-setup -d /opt/unbound/etc/unbound/state;
       UB_UID=$(id -u unbound 2>/dev/null || id -u _unbound 2>/dev/null || echo 1000);
       UB_GID=$(id -g unbound 2>/dev/null || id -g _unbound 2>/dev/null || echo 1000);
       chown -R "$UB_UID:$UB_GID" /opt/unbound/etc/unbound/state || true;
