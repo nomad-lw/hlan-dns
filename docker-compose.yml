@@ -47,7 +47,11 @@ services:
       sh -c 'while
         [ ! -s /opt/unbound/etc/unbound/unbound.conf ] ||
         [ ! -s /opt/unbound/etc/unbound/state/root.key ] ||
-        [ ! -s /opt/unbound/etc/unbound/state/root.hints ];
+        [ ! -s /opt/unbound/etc/unbound/state/root.hints ] ||
+        [ ! -s /opt/unbound/etc/unbound/state/unbound_server.key ] ||
+        [ ! -s /opt/unbound/etc/unbound/state/unbound_server.pem ] ||
+        [ ! -s /opt/unbound/etc/unbound/state/unbound_control.key ] ||
+        [ ! -s /opt/unbound/etc/unbound/state/unbound_control.pem ];
       do sleep 1; done;
       unbound-checkconf /opt/unbound/etc/unbound/unbound.conf &&
       unbound -dd -c /opt/unbound/etc/unbound/unbound.conf'
