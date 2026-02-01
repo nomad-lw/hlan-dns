@@ -1,0 +1,30 @@
+services:
+  init-unbound:
+    image: mvance/unbound:latest
+    command: sh -c 'unbound-anchor -a /opt/unbound/etc/unbound/root.key -v && curl -fsSL https://www.internic.net/domain/named.root -o /opt/unbound/etc/unbound/root.hints && [ -f /opt/unbound/etc/unbound/unbound_control.key ] || unbound-control-setup'
+    volumes:
+      - ./unbound:/opt/unbound/etc/unbound
+    restart: "no"
+
+  unbound:
+    container_name: unbound
+    image: mvance/unbound:latest
+    restart: unless-stopped
+    hostname: unbound
+    depends_on:
+      - init-unbound
+    volumes:
+      - ./unbound:/opt/unbound/etc/unbound
+    networks:
+      default:
+        ipv4_address: ${IP_UNBOUND}
+    healthcheck:
+      test: ["CMD", "drill", "-p", "5335", "@127.0.0.1", "cloudflare.com", "A"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  default:
+    name: ${MACVLANNET}
+    external: true

@@ -1,0 +1,48 @@
+# Pi-hole runtime data
+pihole/etc-pihole/*
+pihole/etc-dnsmasq.d/*
+
+# Keep custom dnsmasq config examples (if any)
+!pihole/etc-dnsmasq.d/.gitkeep
+!pihole/etc-dnsmasq.d/*.example
+
+# Unbound runtime data
+unbound/root.key
+unbound/*.log
+
+# Keep configuration files
+!unbound/unbound.conf
+!unbound/root.hints
+!unbound/*.sh
+
+# Backup files
+*.tar.gz
+*.zip
+*.bak
+*.backup
+*~
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Environment files (if you add any)
+.env
+.env.local
+*.secret
+
+# Docker override files
+docker-compose.override.yml
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
