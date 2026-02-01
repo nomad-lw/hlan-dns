@@ -18,8 +18,8 @@ services:
           cp /opt/unbound/etc/unbound/root.hints /opt/unbound/state/root.hints || true;
         fi
       fi;
-      cd /opt/unbound/state;
-      [ -f unbound_control.key ] || unbound-control-setup'
+      [ -f /opt/unbound/state/unbound_control.key ] || unbound-control-setup -d /opt/unbound/state;
+      chmod 600 /opt/unbound/state/unbound_*.* || true'
 
   unbound:
     image: mvance/unbound:1.19.3
