@@ -9,7 +9,7 @@ services:
   unbound:
     container_name: unbound
     image: mvance/unbound:latest
-    restart: unless-stopped
+    restart: "no"
     hostname: unbound
     depends_on:
       - init-unbound
@@ -23,6 +23,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    entrypoint: ["sh", "-c", "sleep infinity"]
 
 networks:
   default:
