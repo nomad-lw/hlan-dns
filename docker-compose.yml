@@ -1,29 +1,46 @@
 services:
   init-unbound:
     image: mvance/unbound:latest
-    command: sh -c 'unbound-anchor -a /opt/unbound/etc/unbound/root.key -v && curl -fsSL https://www.internic.net/domain/named.root -o /opt/unbound/etc/unbound/root.hints && [ -f /opt/unbound/etc/unbound/unbound_control.key ] || unbound-control-setup'
-    volumes:
-      - ./unbound:/opt/unbound/etc/unbound
     restart: "no"
+    volumes:
+      - ${PORTAINER_STACK_DIR:-.}/unbound:/opt/unbound/etc/unbound:ro
+      - unbound-state:/opt/unbound/state
+    entrypoint: >
+      sh -c 'set -e;
+      mkdir -p /opt/unbound/state;
+      unbound-anchor -a /opt/unbound/state/root.key -v || true;
+      curl -fsSL https://www.internic.net/domain/named.root -o /opt/unbound/state/root.hints;
+      cd /opt/unbound/state;
+      [ -f unbound_control.key ] || unbound-control-setup'
 
   unbound:
+    image: mvance/unbound:1.19.3
     container_name: unbound
-    image: mvance/unbound:latest
-    restart: "no"
-    hostname: unbound
     depends_on:
       - init-unbound
+    # command: >
+    #   sh -c 'while [ ! -s /opt/unbound/state/root.key ] || [ ! -s /opt/unbound/state/root.hints ]; do sleep 1; done;
+    #   unbound -d -c /opt/unbound/etc/unbound/unbound.conf'
     volumes:
-      - ./unbound:/opt/unbound/etc/unbound
+      - ${PORTAINER_STACK_DIR:-.}/unbound:/opt/unbound/etc/unbound:ro
+      - unbound-state:/opt/unbound/state
     networks:
       default:
         ipv4_address: ${IP_UNBOUND}
+    # If not macvlan
+    # ports:
+    #   - "5335:5335/tcp"
+    #   - "5335:5335/udp"
+
     healthcheck:
       test: ["CMD", "drill", "-p", "5335", "@127.0.0.1", "cloudflare.com", "A"]
       interval: 30s
       timeout: 10s
       retries: 3
-    entrypoint: ["sh", "-c", "sleep infinity"]
+    restart: unless-stopped
+
+volumes:
+  unbound-state:
 
 networks:
   default:
