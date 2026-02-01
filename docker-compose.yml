@@ -5,7 +5,7 @@ services:
     volumes:
       - ${PORTAINER_STACK_DIR:-.}/unbound:/opt/unbound/template:ro
       - unbound-data:/opt/unbound/etc/unbound
-    entrypoint: >
+    entrypoint: |
       sh -c 'set -e;
       mkdir -p /opt/unbound/etc/unbound/state;
       if [ ! -f /opt/unbound/etc/unbound/unbound.conf ]; then
@@ -15,7 +15,10 @@ services:
         find /opt/unbound/template/conf.d -type f -name "*.conf" -print0 | while IFS= read -r -d "" f; do
           rel="$${f#/opt/unbound/template/}";
           dest="/opt/unbound/etc/unbound/$${rel}";
-          [ -f "$dest" ] || { mkdir -p "$(dirname "$dest")"; cp "$f" "$dest"; }
+          if [ ! -f "$dest" ]; then
+            mkdir -p "$(dirname "$dest")";
+            cp "$f" "$dest";
+          fi;
         done;
       fi;
       unbound-anchor -a /opt/unbound/etc/unbound/state/root.key -v || true;
@@ -26,20 +29,22 @@ services:
           curl -fsSL https://www.internic.net/domain/named.root -o /opt/unbound/etc/unbound/state/root.hints || true;
         elif [ -s /opt/unbound/template/root.hints ]; then
           cp /opt/unbound/template/root.hints /opt/unbound/etc/unbound/state/root.hints || true;
-        fi
+        fi;
       fi;
       rm -f /opt/unbound/etc/unbound/state/unbound_control.key /opt/unbound/etc/unbound/state/unbound_control.pem /opt/unbound/etc/unbound/state/unbound_server.key /opt/unbound/etc/unbound/state/unbound_server.pem 2>/dev/null || true;
       unbound-control-setup -d /opt/unbound/etc/unbound/state;
-      UB_USER=root;
-      UB_GROUP=root;
-      if grep -q '^_unbound:' /etc/passwd 2>/dev/null; then
-        UB_USER=_unbound;
-        UB_GROUP=_unbound;
-      elif grep -q '^unbound:' /etc/passwd 2>/dev/null; then
-        UB_USER=unbound;
-        UB_GROUP=unbound;
+      UB_USER=_unbound;
+      UB_GROUP=_unbound;
+      if ! id -u "$UB_USER" >/dev/null 2>&1; then
+        if id -u unbound >/dev/null 2>&1; then
+          UB_USER=unbound;
+          UB_GROUP=unbound;
+        else
+          UB_USER=root;
+          UB_GROUP=root;
+        fi;
       fi;
-      echo "Unbound service account: $UB_USER"
+      echo "Unbound service account: ${UB_USER}:${UB_GROUP}";
       chown -R "$UB_USER:$UB_GROUP" /opt/unbound/etc/unbound/state || true;
       chmod 750 /opt/unbound/etc/unbound/state 2>/dev/null || true;
       chmod 640 /opt/unbound/etc/unbound/state/root.key 2>/dev/null || true;
