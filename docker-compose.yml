@@ -3,7 +3,7 @@ services:
     image: mvance/unbound:latest
     restart: "no"
     volumes:
-      - ${PORTAINER_STACK_DIR:-.}/unbound:/opt/unbound/etc/unbound:ro
+      - ${PORTAINER_STACK_DIR:-.}/unbound:/opt/unbound/etc/unbound
       - unbound-state:/opt/unbound/etc/unbound/state
     entrypoint: >
       sh -c 'set -e;
