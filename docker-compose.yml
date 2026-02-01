@@ -30,9 +30,17 @@ services:
       fi;
       rm -f /opt/unbound/etc/unbound/state/unbound_control.key /opt/unbound/etc/unbound/state/unbound_control.pem /opt/unbound/etc/unbound/state/unbound_server.key /opt/unbound/etc/unbound/state/unbound_server.pem 2>/dev/null || true;
       unbound-control-setup -d /opt/unbound/etc/unbound/state;
-      UB_UID=$(id -u unbound 2>/dev/null || id -u _unbound 2>/dev/null || echo 1000);
-      UB_GID=$(id -g unbound 2>/dev/null || id -g _unbound 2>/dev/null || echo 1000);
-      chown -R "$UB_UID:$UB_GID" /opt/unbound/etc/unbound/state || true;
+      UB_USER=root;
+      UB_GROUP=root;
+      if grep -q '^_unbound:' /etc/passwd 2>/dev/null; then
+        UB_USER=_unbound;
+        UB_GROUP=_unbound;
+      elif grep -q '^unbound:' /etc/passwd 2>/dev/null; then
+        UB_USER=unbound;
+        UB_GROUP=unbound;
+      fi;
+      echo "Unbound service account: $UB_USER"
+      chown -R "$UB_USER:$UB_GROUP" /opt/unbound/etc/unbound/state || true;
       chmod 750 /opt/unbound/etc/unbound/state 2>/dev/null || true;
       chmod 640 /opt/unbound/etc/unbound/state/root.key 2>/dev/null || true;
       chmod 644 /opt/unbound/etc/unbound/state/root.hints 2>/dev/null || true;
