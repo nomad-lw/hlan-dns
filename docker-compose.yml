@@ -8,8 +8,19 @@ services:
     entrypoint: >
       sh -c 'set -e;
       mkdir -p /opt/unbound/state;
+      # Trust anchor
       unbound-anchor -a /opt/unbound/state/root.key -v || true;
-      curl -fsSL https://www.internic.net/domain/named.root -o /opt/unbound/state/root.hints;
+      # Root hints
+      if [ ! -s /opt/unbound/state/root.hints ]; then
+        if command -v wget >/dev/null 2>&1; then
+          wget -qO /opt/unbound/state/root.hints https://www.internic.net/domain/named.root || true;
+        elif command -v curl >/dev/null 2>&1; then
+          curl -fsSL https://www.internic.net/domain/named.root -o /opt/unbound/state/root.hints || true;
+        elif [ -s /opt/unbound/etc/unbound/root.hints ]; then
+          cp /opt/unbound/etc/unbound/root.hints /opt/unbound/state/root.hints || true;
+        fi
+      fi;
+      # Remote-control certs
       cd /opt/unbound/state;
       [ -f unbound_control.key ] || unbound-control-setup'
 
