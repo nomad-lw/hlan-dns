@@ -26,9 +26,6 @@ services:
     container_name: unbound
     depends_on:
       - init-unbound
-    command: >
-      sh -c 'while [ ! -s /opt/unbound/state/root.key ] || [ ! -s /opt/unbound/state/root.hints ]; do sleep 1; done;
-      unbound -d -c /opt/unbound/etc/unbound/unbound.conf'
     volumes:
       - ${PORTAINER_STACK_DIR:-.}/unbound:/opt/unbound/etc/unbound
       - unbound-state:/opt/unbound/state
