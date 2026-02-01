@@ -29,8 +29,8 @@ services:
         fi
       fi;
       [ -f /opt/unbound/etc/unbound/state/unbound_control.key ] || unbound-control-setup -d /opt/unbound/etc/unbound/state;
-      UB_UID=$(id -u unbound 2>/dev/null || id -u _unbound 2>/dev/null || echo 100);
-      UB_GID=$(id -g unbound 2>/dev/null || id -g _unbound 2>/dev/null || echo 101);
+      UB_UID=$(id -u unbound 2>/dev/null || id -u _unbound 2>/dev/null || echo 1000);
+      UB_GID=$(id -g unbound 2>/dev/null || id -g _unbound 2>/dev/null || echo 1000);
       chown -R "$UB_UID:$UB_GID" /opt/unbound/etc/unbound/state || true;
       chmod 750 /opt/unbound/etc/unbound/state 2>/dev/null || true;
       chmod 640 /opt/unbound/etc/unbound/state/root.key 2>/dev/null || true;
