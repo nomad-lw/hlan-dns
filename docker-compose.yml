@@ -62,6 +62,7 @@ services:
     networks:
       default:
         ipv4_address: ${IP_UNBOUND}
+      container_net:
     healthcheck:
       test: ["CMD", "drill", "-p", "5335", "@127.0.0.1", "cloudflare.com", "A"]
       interval: 30s
@@ -76,3 +77,7 @@ networks:
   default:
     name: ${MACVLANNET}
     external: true
+  download_net:
+    name: ${DOWNLOAD_NET}
+    external: true
+    internal: true # Blocks internet/LAN access
