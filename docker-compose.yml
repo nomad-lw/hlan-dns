@@ -1,39 +1,48 @@
 services:
   init-unbound:
-    image: mvance/unbound:latest
+    image: mvance/unbound:1.19.3
     restart: "no"
     volumes:
-      - ${PORTAINER_STACK_DIR:-.}/unbound:/opt/unbound/etc/unbound
-      - unbound-state:/opt/unbound/etc/unbound/state
+      - ${PORTAINER_STACK_DIR:-.}/unbound:/opt/unbound/template:ro
+      - unbound-data:/opt/unbound/etc/unbound
     entrypoint: >
       sh -c 'set -e;
       mkdir -p /opt/unbound/etc/unbound/state;
+      if [ ! -f /opt/unbound/etc/unbound/unbound.conf ]; then
+        cp /opt/unbound/template/unbound.conf /opt/unbound/etc/unbound/unbound.conf;
+      fi;
+      if [ -d /opt/unbound/template/conf.d ]; then
+        find /opt/unbound/template/conf.d -type f -name "*.conf" -print0 | while IFS= read -r -d "" f; do
+          rel="${f#/opt/unbound/template/}";
+          dest="/opt/unbound/etc/unbound/${rel}";
+          [ -f "$dest" ] || { mkdir -p "$(dirname "$dest")"; cp "$f" "$dest"; }
+        done;
+      fi;
       unbound-anchor -a /opt/unbound/etc/unbound/state/root.key -v || true;
       if [ ! -s /opt/unbound/etc/unbound/state/root.hints ]; then
         if command -v wget >/dev/null 2>&1; then
           wget -qO /opt/unbound/etc/unbound/state/root.hints https://www.internic.net/domain/named.root || true;
         elif command -v curl >/dev/null 2>&1; then
           curl -fsSL https://www.internic.net/domain/named.root -o /opt/unbound/etc/unbound/state/root.hints || true;
-        elif [ -s /opt/unbound/etc/unbound/root.hints ]; then
-          cp /opt/unbound/etc/unbound/root.hints /opt/unbound/etc/unbound/state/root.hints || true;
+        elif [ -s /opt/unbound/template/root.hints ]; then
+          cp /opt/unbound/template/root.hints /opt/unbound/etc/unbound/state/root.hints || true;
         fi
       fi;
       [ -f /opt/unbound/etc/unbound/state/unbound_control.key ] || unbound-control-setup -d /opt/unbound/etc/unbound/state;
       UB_UID=$(id -u unbound 2>/dev/null || echo 100);
       UB_GID=$(id -g unbound 2>/dev/null || echo 101);
-      chown -R "$UB_UID:$UB_GID" /opt/unbound/etc/unbound/state || true;
-      chmod 640 /opt/unbound/etc/unbound/state/unbound_* || true;
-      chmod 644 /opt/unbound/etc/unbound/state/root.hints || true;
-      chmod 640 /opt/unbound/etc/unbound/state/root.key || true'
+      chown -R "$UB_UID:$UB_GID" /opt/unbound/etc/unbound || true;
+      chmod 640 /opt/unbound/etc/unbound/state/unbound_* /opt/unbound/etc/unbound/state/root.key 2>/dev/null || true;
+      chmod 644 /opt/unbound/etc/unbound/state/root.hints 2>/dev/null || true;
+      echo "Init complete."'
 
   unbound:
-    image: mvance/unbound:1.19.3
+    image: mvance/unbound:latest
     container_name: unbound
     depends_on:
       - init-unbound
     volumes:
-      - ${PORTAINER_STACK_DIR:-.}/unbound:/opt/unbound/etc/unbound
-      - unbound-state:/opt/unbound/etc/unbound/state
+      - unbound-data:/opt/unbound/etc/unbound
     networks:
       default:
         ipv4_address: ${IP_UNBOUND}
@@ -45,7 +54,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  unbound-state:
+  unbound-data:
 
 networks:
   default:
