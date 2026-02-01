@@ -15,9 +15,9 @@ services:
         find /opt/unbound/template/conf.d -type f -name "*.conf" -print0 | while IFS= read -r -d "" f; do
           rel="$${f#/opt/unbound/template/}";
           dest="/opt/unbound/etc/unbound/$${rel}";
-          if [ ! -f "$dest" ]; then
-            mkdir -p "$(dirname "$dest")";
-            cp "$f" "$dest";
+          if [ ! -f "$${dest}" ]; then
+            mkdir -p "$$(dirname "$${dest}")";
+            cp "$${f}" "$${dest}";
           fi;
         done;
       fi;
@@ -35,7 +35,7 @@ services:
       unbound-control-setup -d /opt/unbound/etc/unbound/state;
       UB_USER=_unbound;
       UB_GROUP=_unbound;
-      if ! id -u "$UB_USER" >/dev/null 2>&1; then
+      if ! id -u "$$UB_USER" >/dev/null 2>&1; then
         if id -u unbound >/dev/null 2>&1; then
           UB_USER=unbound;
           UB_GROUP=unbound;
@@ -44,8 +44,8 @@ services:
           UB_GROUP=root;
         fi;
       fi;
-      echo "Unbound service account: ${UB_USER}:${UB_GROUP}";
-      chown -R "$UB_USER:$UB_GROUP" /opt/unbound/etc/unbound/state || true;
+      echo "Unbound service account: $${UB_USER}:$${UB_GROUP}";
+      chown -R "$$UB_USER:$$UB_GROUP" /opt/unbound/etc/unbound/state || true;
       chmod 750 /opt/unbound/etc/unbound/state 2>/dev/null || true;
       chmod 640 /opt/unbound/etc/unbound/state/root.key 2>/dev/null || true;
       chmod 644 /opt/unbound/etc/unbound/state/root.hints 2>/dev/null || true;
