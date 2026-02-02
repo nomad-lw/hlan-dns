@@ -69,8 +69,23 @@ services:
       retries: 3
     restart: unless-stopped
 
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    depends_on:
+      - unbound
+    volumes:
+      - adguard-config:/opt/adguardhome/conf
+      - adguard-work:/opt/adguardhome/work
+    networks:
+      default:
+        ipv4_address: ${IP_ADGUARD}
+    restart: unless-stopped
+
 volumes:
   unbound-data:
+  adguard-config:
+  adguard-work:
 
 networks:
   default:
