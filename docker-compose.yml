@@ -54,7 +54,7 @@ services:
 
   unbound:
     image: mvance/unbound:1.19.3
-    container_name: unbound
+    container_name: ${NAME_UNBOUND:-unbound}
     depends_on:
       - init-unbound
     volumes:
@@ -71,7 +71,7 @@ services:
 
   adguard:
     image: adguard/adguardhome:latest
-    container_name: adguard
+    container_name: ${NAME_ADGUARD:-adguard}
     depends_on:
       - unbound
     volumes:
