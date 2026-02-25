@@ -80,6 +80,8 @@ services:
     networks:
       default:
         ipv4_address: ${IP_ADGUARD}
+      internal:
+        ipv4_address: ${IP_ADGUARD_INTERNAL:-172.16.20.2}
     restart: unless-stopped
 
 volumes:
@@ -91,3 +93,9 @@ networks:
   default:
     name: ${MACVLANNET}
     external: true
+  internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${INTERNAL_SUBNET:-172.16.20.0/24}
+          gateway: ${INTERNAL_GATEWAY:-172.16.20.1}
